@@ -37,4 +37,21 @@ contract HumanSVGGenerator {
             )
         );
     }
+
+    function generatePath(
+        string _d,
+        string _fill,
+        string _fillOpacity
+    ) internal pure returns (string memory finalPath) {
+        finalPath = string(abi.encodePacked("<path d='", _d, "' "));
+        finalPath = _fill != ""
+            ? string(abi.encoded(finalPath, "fill='", _fill, "' "))
+            : string(abi.encoded(finalPath, ""));
+        finalPath = _fillOpacity != ""
+            ? string(
+                abi.encoded(finalPath, "fill-opacity='", _fillOpacity, "' ")
+            )
+            : string(abi.encoded(finalPath, ""));
+        finalPath = string(abi.encoded(finalPath, "/>"));
+    }
 }
