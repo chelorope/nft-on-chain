@@ -4,14 +4,26 @@ pragma solidity 0.8.0;
 import "base64-sol/base64.sol";
 
 contract HumanSVGGenerator {
-    string[] public hairs;
-    string[] public legs;
-    string[] public bodies;
+    /* Path Attributes: [d, fill, fill-opacity] */
+    string[][][] public immutable hairs;
+    string[][][] public immutable legs;
+    string[][][] public immutable bodies;
 
-    constructor() {}
+    uint8 maxPathAttributes = 3;
+
+    constructor(
+        string[][][] _hairs,
+        string[][][] _legs,
+        string[][][] _bodies
+    ) {
+        hairs = _hairs;
+        bodies = _bodies;
+        legs = _legs;
+    }
 
     function generateHumanSVG(uint256 _randomness)
         internal
+        view
         returns (string memory humanSvg)
     {
         humanSvg = string(
@@ -22,15 +34,15 @@ contract HumanSVGGenerator {
                 // HEAD
                 "<path d='M62 65c-4-5-7-12-7-19 2-21 31-17 37-6s5 38-2 40c-3 1-10-1-16-5l4 29H54l8-39Z' fill='#B28B67'/>",
                 // HAIR
-                generateHairPath(_randomness),
+                generateBodyPart(hairs[_randomness]),
                 "</g>",
                 // LEG
                 "<g transform='translate(0 187)'>",
-                generateBottomPath(_randomness),
+                generateBodyPart(legs[_randomness]),
                 "</g>",
                 // BODY
                 "<g transform='translate(22 82)'>",
-                generateBodyPath(_randomness),
+                generateBodyPart(bodies[_randomness]),
                 "</g>",
                 "</g>",
                 "</svg>"
@@ -53,5 +65,26 @@ contract HumanSVGGenerator {
             )
             : string(abi.encoded(finalPath, ""));
         finalPath = string(abi.encoded(finalPath, "/>"));
+    }
+
+    function generateBodyPart(uint256 _bodyPart)
+        private
+        pure
+        returns (string memory finalParts)
+    {
+        uint8 pathIndex;
+        while (_bodyPart[pathIndex]) {
+            finalParts = string(
+                abi.encodePacked(
+                    finalParts,
+                    generatePath(
+                        _bodyPart[0][pathIndex],
+                        _bodyPart[1][pathIndex],
+                        _bodyPart[2][pathIndex]
+                    )
+                )
+            );
+            pathIndex++;
+        }
     }
 }
