@@ -2,6 +2,7 @@ import networkConfig from "../networks";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { isDevelopementChain, sleep } from "../util";
+import fs from "fs";
 
 const deployCollectible: DeployFunction = async ({
   getNamedAccounts,
@@ -18,22 +19,39 @@ const deployCollectible: DeployFunction = async ({
   let vrfCoordinatorAddress;
 
   if (isDevelopementChain(chainId)) {
-    const linkToken = await get("LinkToken");
-    const VRFCoordinatorMock = await get("VRFCoordinatorMock");
-    linkTokenAddress = linkToken.address;
-    vrfCoordinatorAddress = VRFCoordinatorMock.address;
+    // const linkToken = await get("LinkToken");
+    // const VRFCoordinatorMock = await get("VRFCoordinatorMock");
+    // linkTokenAddress = linkToken.address;
+    // vrfCoordinatorAddress = VRFCoordinatorMock.address;
   } else {
     linkTokenAddress = CONFIG.linkToken;
     vrfCoordinatorAddress = CONFIG.vrfCoordinator;
   }
   const keyHash = CONFIG.keyHash;
   const fee = CONFIG.fee;
+  const hairs = formatJsonSvg(
+    JSON.parse(fs.readFileSync("../files/Hairs.json", "utf8"))
+  );
+  const legs = formatJsonSvg(
+    JSON.parse(fs.readFileSync("../files/Legs.json", "utf8"))
+  );
+  const bodies = formatJsonSvg(
+    JSON.parse(fs.readFileSync("../files/Bodies.json", "utf8"))
+  );
 
   log("Deploying contract from: ", deployer);
 
-  const collectible = await deploy("Collectible", {
+  const collectible = await deploy("Humaaans", {
     from: deployer,
-    args: [vrfCoordinatorAddress, linkTokenAddress, keyHash, fee],
+    args: [
+      vrfCoordinatorAddress,
+      linkTokenAddress,
+      keyHash,
+      fee,
+      hairs,
+      legs,
+      bodies,
+    ],
     log: true,
   });
 
@@ -67,6 +85,13 @@ const deployCollectible: DeployFunction = async ({
     }
   }
   log("----------------------------------------------------");
+};
+
+const formatJsonSvg = (data: Record<string, string>[]) => {
+  return data.map((path) => {
+    const { d, fill, fillOpacity } = path;
+    return [d, fill, fillOpacity];
+  });
 };
 
 export default deployCollectible;

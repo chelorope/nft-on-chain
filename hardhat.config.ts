@@ -28,7 +28,15 @@ const {
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
-  solidity: "0.8.4",
+  solidity: {
+    compilers: [
+      { version: "0.8.0" },
+      { version: "0.8.1" },
+      { version: "0.6.0" },
+      { version: "0.6.1" },
+      { version: "0.6.6" },
+    ],
+  },
   networks: {
     rinkeby: {
       url: RINKEBY_RPC_URL,
