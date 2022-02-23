@@ -1,7 +1,7 @@
 import networkConfig from "../networks";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { isDevelopementChain, sleep } from "../util";
+import { isDevelopementChain, sleep, formatJsonSvg } from "../util";
 import fs from "fs";
 
 const deployCollectible: DeployFunction = async ({
@@ -19,10 +19,10 @@ const deployCollectible: DeployFunction = async ({
   let vrfCoordinatorAddress;
 
   if (isDevelopementChain(chainId)) {
-    // const linkToken = await get("LinkToken");
-    // const VRFCoordinatorMock = await get("VRFCoordinatorMock");
-    // linkTokenAddress = linkToken.address;
-    // vrfCoordinatorAddress = VRFCoordinatorMock.address;
+    const linkToken = await get("LinkToken");
+    const VRFCoordinatorMock = await get("VRFCoordinatorMock");
+    linkTokenAddress = linkToken.address;
+    vrfCoordinatorAddress = VRFCoordinatorMock.address;
   } else {
     linkTokenAddress = CONFIG.linkToken;
     vrfCoordinatorAddress = CONFIG.vrfCoordinator;
@@ -30,14 +30,16 @@ const deployCollectible: DeployFunction = async ({
   const keyHash = CONFIG.keyHash;
   const fee = CONFIG.fee;
   const hairs = formatJsonSvg(
-    JSON.parse(fs.readFileSync("../files/Hairs.json", "utf8"))
+    JSON.parse(fs.readFileSync("./files/Hairs.json", "utf8"))
   );
   const legs = formatJsonSvg(
-    JSON.parse(fs.readFileSync("../files/Legs.json", "utf8"))
+    JSON.parse(fs.readFileSync("./files/Legs.json", "utf8"))
   );
   const bodies = formatJsonSvg(
-    JSON.parse(fs.readFileSync("../files/Bodies.json", "utf8"))
+    JSON.parse(fs.readFileSync("./files/Bodies.json", "utf8"))
   );
+
+  console.log("Hairs", hairs, "\nBodies", bodies, "\nLegs", legs);
 
   log("Deploying contract from: ", deployer);
 
@@ -73,6 +75,9 @@ const deployCollectible: DeployFunction = async ({
           linkTokenAddress,
           keyHash,
           fee,
+          hairs,
+          legs,
+          bodies,
         ],
         network: network.name,
       });
@@ -80,19 +85,12 @@ const deployCollectible: DeployFunction = async ({
       log("The contract couldn't be verified yet");
       log("You can try later, running:");
       log(
-        `npx hardhat verify --network ${network.name} ${collectible.address} ${vrfCoordinatorAddress} ${linkTokenAddress} ${keyHash} ${fee}`
+        `npx hardhat verify --network ${network.name} ${collectible.address} ${vrfCoordinatorAddress} ${linkTokenAddress} ${keyHash} ${fee} ${hairs} ${legs} ${bodies}`
       );
     }
   }
   log("----------------------------------------------------");
 };
 
-const formatJsonSvg = (data: Record<string, string>[]) => {
-  return data.map((path) => {
-    const { d, fill, fillOpacity } = path;
-    return [d, fill, fillOpacity];
-  });
-};
-
 export default deployCollectible;
-export const tags = ["all", "vrf"];
+export const tags = ["all", "collectible"];

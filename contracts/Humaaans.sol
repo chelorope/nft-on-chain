@@ -7,14 +7,16 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "base64-sol/base64.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
-contract RandomSVG is
+import "hardhat/console.sol";
+
+contract Humaaans is
     ERC721URIStorage,
     VRFConsumerBase,
     HumanSVGGenerator,
     Ownable
 {
     uint256 public tokenCounter;
-    uint256 public immutable maxTokens = maxHairs * maxLegs * maxBodies;
+    uint256 public immutable maxTokens;
 
     event CreatedSVG(uint256 indexed tokenId, string tokenURI);
     event CreatedUnfinishedSVG(uint256 indexed tokenId, uint256 randomNumber);
@@ -33,9 +35,9 @@ contract RandomSVG is
         address _LinkToken,
         bytes32 _keyhash,
         uint256 _fee,
-        string[][][] memory _hairs,
-        string[][][] memory _legs,
-        string[][][] memory _bodies
+        string[][] memory _hairs,
+        string[][] memory _legs,
+        string[][] memory _bodies
     )
         VRFConsumerBase(_VRFCoordinator, _LinkToken)
         ERC721("Humaaans", "HMN")
@@ -44,6 +46,7 @@ contract RandomSVG is
         tokenCounter = 0;
         keyHash = _keyhash;
         fee = _fee;
+        maxTokens = maxHairs * maxLegs * maxBodies;
     }
 
     function withdraw() public payable onlyOwner {
@@ -55,24 +58,29 @@ contract RandomSVG is
         requestId = requestRandomness(keyHash, fee);
         requestIdToSender[requestId] = msg.sender;
         uint256 tokenId = tokenCounter;
+        console.log("Token ID %s", tokenId);
         requestIdToTokenId[requestId] = tokenId;
         tokenCounter = tokenCounter + 1;
         emit RequestedRandomNumber(requestId, tokenId);
     }
 
     function finishMint(uint256 tokenId) public {
-        require(
-            bytes(tokenURI(tokenId)).length <= 0,
-            "tokenURI is already set!"
-        );
-        require(tokenCounter > tokenId, "TokenId has not been minted yet!");
-        require(
-            tokenIdToRandomNumber[tokenId] > 0,
-            "Need to wait for the Chainlink node to respond!"
-        );
-        uint256 randomNumber = tokenIdToRandomNumber[tokenId];
+        // require(
+        //     bytes(tokenURI(tokenId)).length <= 0,
+        //     "tokenURI is already set!"
+        // );
+        // require(tokenCounter > tokenId, "TokenId has not been minted yet!");
+        // require(
+        //     tokenIdToRandomNumber[tokenId] > 0,
+        //     "Need to wait for the Chainlink node to respond!"
+        // );
+        _safeMint(msg.sender, tokenId); //TODO: remove
+        console.log("[Solidity] Token ID: %s", tokenId);
+        uint256 randomNumber = 4; //TODO: tokenIdToRandomNumber[tokenId];
         string memory svg = generateHumanSVG(randomNumber);
+        console.log("Generated SVG: ", svg);
         string memory imageURI = svgToImageURI(svg);
+        console.log("Image URI: ", imageURI);
         _setTokenURI(tokenId, formatTokenURI(imageURI));
         emit CreatedSVG(tokenId, svg);
     }
@@ -83,6 +91,7 @@ contract RandomSVG is
     {
         address nftOwner = requestIdToSender[requestId];
         uint256 tokenId = requestIdToTokenId[requestId];
+        console.log("NFT MINTED %n", tokenId);
         _safeMint(nftOwner, tokenId);
         tokenIdToRandomNumber[tokenId] = randomNumber;
         emit CreatedUnfinishedSVG(tokenId, randomNumber);

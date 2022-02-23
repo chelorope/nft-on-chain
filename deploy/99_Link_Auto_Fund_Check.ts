@@ -31,9 +31,9 @@ const fundWithLink: DeployFunction = async ({
 
   // Auto-fund VRFConsumer contract
 
-  const Collectible = await deployments.get("Collectible");
+  const Collectible = await deployments.get("Humaaans");
   const CollectibleContract = await ethers.getContractAt(
-    "Collectible",
+    "Humaaans",
     Collectible.address
   );
 

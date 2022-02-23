@@ -14,6 +14,7 @@ import "@appliedblockchain/chainlink-plugins-fund-link";
 import "./tasks/accounts";
 import "./tasks/contracts";
 import "./tasks/balance";
+import "./tasks/verify-collectible";
 
 dotenv.config();
 
@@ -35,6 +36,9 @@ const config: HardhatUserConfig = {
       { version: "0.6.0" },
       { version: "0.6.1" },
       { version: "0.6.6" },
+      { version: "0.7.6" },
+      { version: "0.6.6" },
+      { version: "0.4.24" },
     ],
   },
   networks: {
@@ -63,6 +67,15 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0, // here this will by default take the first account as deployer
+      1: 0, // similarly on mainnet it will take the first account as deployer. Note though that depending on how hardhat network are configured, the account 0 on one network can be different than on another
+    },
+    feeCollector: {
+      default: 1,
+    },
   },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY,

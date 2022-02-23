@@ -3,11 +3,16 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
-contract HumanSVGGenerator {
-    /* Path Attributes: [d, fill, fill-opacity] */
-    string[][] public hairs;
-    string[][] public legs;
-    string[][] public bodies;
+abstract contract HumanSVGGenerator {
+    struct PathAttributes {
+        string d;
+        string fill;
+        string fillOpacity;
+    }
+
+    PathAttributes[][] public hairs;
+    PathAttributes[][] public legs;
+    PathAttributes[][] public bodies;
 
     bool[][][] public alreadyMinted;
 
@@ -16,9 +21,9 @@ contract HumanSVGGenerator {
     uint256 public maxBodies;
 
     constructor(
-        string[][] memory _hairs,
-        string[][] memory _legs,
-        string[][] memory _bodies
+        PathAttributes[][] memory _hairs,
+        PathAttributes[][] memory _legs,
+        PathAttributes[][] memory _bodies
     ) {
         hairs = _hairs;
         bodies = _bodies;
@@ -71,7 +76,7 @@ contract HumanSVGGenerator {
         );
     }
 
-    function generateBodyPart(string[] memory _bodyPart)
+    function generateBodyPart(PathAttributes[] memory _bodyPart)
         private
         view
         returns (string memory finalParts)
@@ -80,16 +85,37 @@ contract HumanSVGGenerator {
             console.log(
                 "generating body part",
                 pathIndex,
-                _bodyPart[pathIndex]
+                _bodyPart[pathIndex].d
             );
             finalParts = string(
-                abi.encodePacked(
-                    finalParts,
-                    string(
-                        abi.encodePacked("<path ", _bodyPart[pathIndex], "/>")
-                    )
-                )
+                abi.encodePacked(finalParts, generatePath(_bodyPart[pathIndex]))
             );
         }
+    }
+
+    function generatePath(PathAttributes memory _attributes)
+        private
+        pure
+        returns (string memory finalPath)
+    {
+        finalPath = string(abi.encodePacked("<path d='", _attributes.d, "' "));
+        finalPath = keccak256(abi.encodePacked(_attributes.fill)) !=
+            keccak256(abi.encodePacked(""))
+            ? string(
+                abi.encodePacked(finalPath, "fill='", _attributes.fill, "' ")
+            )
+            : string(abi.encodePacked(finalPath, ""));
+        finalPath = keccak256(abi.encodePacked(_attributes.fillOpacity)) !=
+            keccak256(abi.encodePacked(""))
+            ? string(
+                abi.encodePacked(
+                    finalPath,
+                    "fill-opacity='",
+                    _attributes.fillOpacity,
+                    "' "
+                )
+            )
+            : string(abi.encodePacked(finalPath, ""));
+        finalPath = string(abi.encodePacked(finalPath, "/>"));
     }
 }

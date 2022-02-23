@@ -18,3 +18,14 @@ export const sleep = async (time: number /* in seconds */): Promise<void> => {
     setTimeout(resolve, time * 1000);
   });
 };
+
+export const formatJsonSvg = (data: Record<string, string>[][]): string[][] => {
+  return data.map((part) =>
+    part.map((path) => {
+      const { d = "", fill = "", fillOpacity = "" } = path;
+      return `d="${d}"${fill ? ` fill="${fill}"` : ""}${
+        fillOpacity ? ` fill-opacity="${fillOpacity}"` : ""
+      }`;
+    })
+  );
+};
