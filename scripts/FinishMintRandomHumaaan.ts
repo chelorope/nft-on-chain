@@ -21,8 +21,7 @@ const main = async () => {
     console.log("Token", tokenId, "successfully minted!");
     const tokenURI = await collectible.tokenURI(tokenId);
     console.log("Token URI:", tokenURI);
-  } catch (error) {
-    // @ts-ignore
+  } catch (error: any) {
     console.log(error.message);
     throw error;
   }

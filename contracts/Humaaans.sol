@@ -105,7 +105,7 @@ contract Humaaans is
 
     function formatTokenURI(string memory imageURI, uint256 tokenId)
         public
-        view
+        pure
         returns (string memory)
     {
         return

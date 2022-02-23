@@ -11,7 +11,7 @@ const fundWithLink: DeployFunction = async ({
 }: HardhatRuntimeEnvironment) => {
   const { log, get } = deployments;
   const chainId = await getChainId();
-  let linkTokenAddress, oracle;
+  let linkTokenAddress;
   let additionalMessage = "";
   const CONFIG = networkConfig[chainId];
   const networkName = CONFIG.name;
@@ -20,13 +20,10 @@ const fundWithLink: DeployFunction = async ({
 
   if (isDevelopementChain(chainId)) {
     const linkToken = await get("LinkToken");
-    const MockOracle = await get("MockOracle");
     linkTokenAddress = linkToken.address;
-    oracle = MockOracle.address;
     additionalMessage = " --linkaddress " + linkTokenAddress;
   } else {
     linkTokenAddress = CONFIG.linkToken;
-    oracle = CONFIG.oracle;
   }
 
   // Auto-fund VRFConsumer contract

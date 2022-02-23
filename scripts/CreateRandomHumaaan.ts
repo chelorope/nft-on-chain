@@ -19,7 +19,7 @@ const main = async () => {
     const tokenId = (await collectible.tokenCounter()).toNumber() - 1;
     console.log("Token ID: ", tokenId);
     console.log("Finishing mint....");
-    await sleep(60); // Giving some time for Chainlink to answer
+    await sleep(120); // Giving some time for Chainlink to answer
     const finishMintTx = await collectible.finishMint(tokenId, {
       from: deployer,
       gasLimit: 20000000,
@@ -28,8 +28,7 @@ const main = async () => {
     console.log("Token", tokenId, "successfully minted!");
     const tokenURI = await collectible.tokenURI(tokenId);
     console.log("Token URI:", tokenURI);
-  } catch (error) {
-    // @ts-ignore
+  } catch (error: any) {
     console.log(error.message);
     throw error;
   }

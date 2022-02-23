@@ -10,20 +10,22 @@ describe("Humaaans", function () {
       "Humaaans",
       Collectible.address
     );
-
+    console.log("Creating token...");
+    const tokenCounter = (await collectible.tokenCounter()).toNumber();
     const creationTx = await collectible.create();
     await creationTx.wait(1);
-    const tokenCount = await collectible.tokenCounter();
-    // console.log(
-    //   "Request id to tokenid:",
-    //   await collectible.requestIdToTokenId()
-    // );
-    console.log("Token Count: ", tokenCount.toNumber());
+    const tokenId = (await collectible.tokenCounter()).toNumber() - 1;
+    console.log("Token created. ID:", tokenId);
+    expect(tokenId).to.equal(tokenCounter);
+
+    console.log("Finishing token mint....");
     // await sleep(20);
-    const mintTx = await collectible.finishMint(tokenCount.toNumber() - 1);
+    const mintTx = await collectible.finishMint(tokenId);
     await mintTx.wait(1);
-    const lastTokenUri = await collectible.tokenURI(tokenCount.toNumber() - 1);
+    console.log("Mint process finished!");
+    const lastTokenUri = await collectible.tokenURI(tokenId);
     console.log("Token URI: ", lastTokenUri);
+    expect(lastTokenUri).to.instanceOf("string");
 
     // expect(await greeter.greet()).to.equal("Hello, world!");
 
