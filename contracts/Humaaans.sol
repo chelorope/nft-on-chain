@@ -58,31 +58,9 @@ contract Humaaans is
         requestId = requestRandomness(keyHash, fee);
         requestIdToSender[requestId] = msg.sender;
         uint256 tokenId = tokenCounter;
-        console.log("Token ID %s", tokenId);
         requestIdToTokenId[requestId] = tokenId;
         tokenCounter = tokenCounter + 1;
         emit RequestedRandomNumber(requestId, tokenId);
-    }
-
-    function finishMint(uint256 tokenId) public {
-        // require(
-        //     bytes(tokenURI(tokenId)).length <= 0,
-        //     "tokenURI is already set!"
-        // );
-        // require(tokenCounter > tokenId, "TokenId has not been minted yet!");
-        // require(
-        //     tokenIdToRandomNumber[tokenId] > 0,
-        //     "Need to wait for the Chainlink node to respond!"
-        // );
-        _safeMint(msg.sender, tokenId); //TODO: remove
-        console.log("[Solidity] Token ID: %s", tokenId);
-        uint256 randomNumber = 4; //TODO: tokenIdToRandomNumber[tokenId];
-        string memory svg = generateHumanSVG(randomNumber);
-        console.log("Generated SVG: ", svg);
-        string memory imageURI = svgToImageURI(svg);
-        console.log("Image URI: ", imageURI);
-        _setTokenURI(tokenId, formatTokenURI(imageURI));
-        emit CreatedSVG(tokenId, svg);
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 randomNumber)
@@ -91,10 +69,26 @@ contract Humaaans is
     {
         address nftOwner = requestIdToSender[requestId];
         uint256 tokenId = requestIdToTokenId[requestId];
-        console.log("NFT MINTED %n", tokenId);
         _safeMint(nftOwner, tokenId);
         tokenIdToRandomNumber[tokenId] = randomNumber;
         emit CreatedUnfinishedSVG(tokenId, randomNumber);
+    }
+
+    function finishMint(uint256 tokenId) public {
+        require(
+            bytes(tokenURI(tokenId)).length <= 0,
+            "tokenURI is already set!"
+        );
+        require(tokenCounter > tokenId, "TokenId has not been minted yet!");
+        require(
+            tokenIdToRandomNumber[tokenId] > 0,
+            "Need to wait for the Chainlink node to respond!"
+        );
+        uint256 randomNumber = tokenIdToRandomNumber[tokenId];
+        string memory svg = generateHumanSVG(randomNumber);
+        string memory imageURI = svgToImageURI(svg);
+        _setTokenURI(tokenId, formatTokenURI(imageURI, tokenId));
+        emit CreatedSVG(tokenId, svg);
     }
 
     function svgToImageURI(string memory svg)
@@ -109,7 +103,7 @@ contract Humaaans is
         return string(abi.encodePacked(baseURL, svgBase64Encoded));
     }
 
-    function formatTokenURI(string memory imageURI)
+    function formatTokenURI(string memory imageURI, uint256 tokenId)
         public
         view
         returns (string memory)
@@ -123,7 +117,7 @@ contract Humaaans is
                             abi.encodePacked(
                                 '{"name":"',
                                 "Humaaan",
-                                tokenCounter,
+                                uint2str(tokenId),
                                 '", "description":"Randomly generated on-chain Humaaan", "attributes":"", "image":"',
                                 imageURI,
                                 '"}'
@@ -132,5 +126,28 @@ contract Humaaans is
                     )
                 )
             );
+    }
+
+    function uint2str(uint256 _i)
+        internal
+        pure
+        returns (string memory _uintAsString)
+    {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len - 1;
+        while (_i != 0) {
+            bstr[k--] = bytes1(uint8(48 + (_i % 10)));
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }

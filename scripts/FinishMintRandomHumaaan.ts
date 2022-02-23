@@ -11,13 +11,16 @@ const main = async () => {
   console.log("Creating NFT on contract: ", Collectible.address);
 
   try {
-    const tokenCount = await collectible.tokenCounter();
-    console.log("Token Count: ", tokenCount.toNumber());
-    const creationTx = await collectible.finishMint(0, {
+    const tokenId = (await collectible.tokenCounter()).toNumber() - 1;
+    console.log("Finishing token: ", tokenId);
+    const creationTx = await collectible.finishMint(tokenId, {
       from: deployer,
       gasLimit: 20000000,
     });
     await creationTx.wait(1);
+    console.log("Token", tokenId, "successfully minted!");
+    const tokenURI = await collectible.tokenURI(tokenId);
+    console.log("Token URI:", tokenURI);
   } catch (error) {
     // @ts-ignore
     console.log(error.message);

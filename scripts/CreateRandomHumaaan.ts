@@ -1,3 +1,4 @@
+import { sleep } from "./../util";
 import { ethers, deployments, getNamedAccounts } from "hardhat";
 
 const main = async () => {
@@ -15,10 +16,18 @@ const main = async () => {
       from: deployer,
     });
     await creationTx.wait(1);
-    const tokenCount = await collectible.tokenCounter();
-    console.log("Token Count: ", tokenCount.toNumber());
-    const lastTokenUri = await collectible.tokenURI(tokenCount.sub(1));
-    console.log("Token URI: ", lastTokenUri);
+    const tokenId = (await collectible.tokenCounter()).toNumber() - 1;
+    console.log("Token ID: ", tokenId);
+    console.log("Finishing mint....");
+    await sleep(60); // Giving some time for Chainlink to answer
+    const finishMintTx = await collectible.finishMint(tokenId, {
+      from: deployer,
+      gasLimit: 20000000,
+    });
+    await finishMintTx.wait(1);
+    console.log("Token", tokenId, "successfully minted!");
+    const tokenURI = await collectible.tokenURI(tokenId);
+    console.log("Token URI:", tokenURI);
   } catch (error) {
     // @ts-ignore
     console.log(error.message);

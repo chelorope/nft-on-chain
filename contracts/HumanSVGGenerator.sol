@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract HumanSVGGenerator {
-    /* Path Attributes: [d, fill, fill-opacity] */
     string[][] public hairs;
     string[][] public legs;
     string[][] public bodies;
@@ -73,15 +72,10 @@ contract HumanSVGGenerator {
 
     function generateBodyPart(string[] memory _bodyPart)
         private
-        view
+        pure
         returns (string memory finalParts)
     {
         for (uint8 pathIndex = 0; pathIndex < _bodyPart.length; pathIndex++) {
-            console.log(
-                "generating body part",
-                pathIndex,
-                _bodyPart[pathIndex]
-            );
             finalParts = string(
                 abi.encodePacked(
                     finalParts,

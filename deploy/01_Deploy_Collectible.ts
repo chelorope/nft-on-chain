@@ -14,7 +14,7 @@ const deployCollectible: DeployFunction = async ({
   const { deploy, get, log } = deployments;
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
-  const CONFIG = networkConfig[chainId];
+  const { keyHash, fee, linkToken, vrfCoordinator } = networkConfig[chainId];
   let linkTokenAddress;
   let vrfCoordinatorAddress;
 
@@ -24,11 +24,9 @@ const deployCollectible: DeployFunction = async ({
     linkTokenAddress = linkToken.address;
     vrfCoordinatorAddress = VRFCoordinatorMock.address;
   } else {
-    linkTokenAddress = CONFIG.linkToken;
-    vrfCoordinatorAddress = CONFIG.vrfCoordinator;
+    linkTokenAddress = linkToken;
+    vrfCoordinatorAddress = vrfCoordinator;
   }
-  const keyHash = CONFIG.keyHash;
-  const fee = CONFIG.fee;
   const hairs = formatJsonSvg(
     JSON.parse(fs.readFileSync("./files/Hairs.json", "utf8"))
   );
@@ -38,8 +36,6 @@ const deployCollectible: DeployFunction = async ({
   const bodies = formatJsonSvg(
     JSON.parse(fs.readFileSync("./files/Bodies.json", "utf8"))
   );
-
-  console.log("Hairs", hairs, "\nBodies", bodies, "\nLegs", legs);
 
   log("Deploying contract from: ", deployer);
 
@@ -81,7 +77,8 @@ const deployCollectible: DeployFunction = async ({
         ],
         network: network.name,
       });
-    } catch (error) {
+    } catch (error: any) {
+      log(error.message);
       log("The contract couldn't be verified yet");
       log("You can try later, running:");
       log(
